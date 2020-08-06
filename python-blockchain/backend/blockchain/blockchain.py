@@ -25,7 +25,7 @@ class Blockchain:
                 - The incoming chain is longer than the local chain.
                 - The incoming chain is formatted properly.
         '''
-        if len(self.chain) >= len(chain):
+        if len(chain) <= len(self.chain):
             raise Exception('Cannot replace. Incoming chain must be longer than local.')
 
         try:
@@ -36,7 +36,16 @@ class Blockchain:
 
     def to_json(self):
         ''' Serialize the blockchain into a list of blocks. '''
-        return list(map(lambda block: block.to_json(), self.chain))
+        return list(map(lambda b: b.to_json(), self.chain))
+
+    @staticmethod
+    def from_json(chain_json):
+        '''
+        De-serializes a list of serialized blocks into a Blockchain instance.
+        '''
+        blockchain = Blockchain()
+        blockchain.chain = list(map(lambda b: Block.from_json(b), chain_json))
+        return blockchain
 
     @staticmethod
     def is_valid(chain):

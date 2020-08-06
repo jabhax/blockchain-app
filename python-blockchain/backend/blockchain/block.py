@@ -77,8 +77,24 @@ class Block:
             difficulty = Block.adjust_difficulty(last_block, timestamp)
             hash = crypto_hash(timestamp, last_hash, data, nonce, difficulty)
 
-        block = Block(timestamp, last_hash, hash, data, nonce, difficulty)
-        return block
+        return Block(timestamp, last_hash, hash, data, nonce, difficulty)
+
+    """
+    @staticmethod
+    def from_json(block_json):
+        '''
+            De-serialize a block's json representation back into a Block
+            instance.
+        '''
+        return Block(**block_json)
+    """
+
+    @staticmethod
+    def from_json(block_json):
+        """
+        Deserialize a block's json representation back into a block instance.
+        """
+        return Block(**block_json)
 
     @staticmethod
     def genesis():
