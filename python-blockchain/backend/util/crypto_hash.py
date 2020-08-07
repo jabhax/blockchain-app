@@ -16,7 +16,10 @@ def crypto_hash(*args):
     '''
     str_args = sorted(map(lambda data: json.dumps(data), args))
     joined_data = ''.join(str_args)
-    return hashlib.sha256(joined_data.encode('utf-8')).hexdigest()
+    return hashlib.sha256(utf8(joined_data)).hexdigest()
+
+def utf8(data):
+    return data.encode('utf-8')
 
 
 def main():
