@@ -1,5 +1,6 @@
-blockchain-app
-Author: Justin Barros - JabHax
+**blockchain-app**
+
+**Author: Justin Barros - JabHax**
 
 **Activate the virtual environment**
 '''

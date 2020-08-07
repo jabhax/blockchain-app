@@ -10,7 +10,8 @@ class Transaction:
         recipients.
     '''
 
-    def __init__(self, sender_wallet, recipient, amount):
+    def __init__(self, sender_wallet=None, recipient=None,
+                amount=None, id=None, output=None, input=None):
         '''
             A transaction consists of an input and output field.
 
@@ -27,9 +28,9 @@ class Transaction:
                     address itself, because this details how much currency the
                     sender should have after the transaction is completed.
         '''
-        self.id = str(uuid.uuid4())[0:8]
-        self.output = self.create_output(sender_wallet, recipient, amount)
-        self.input = self.create_input(sender_wallet, self.output)
+        self.id = id or str(uuid.uuid4())[0:8]
+        self.output = output or self.create_output(sender_wallet, recipient, amount)
+        self.input = input or self.create_input(sender_wallet, self.output)
 
     def create_output(self, sender_wallet, recipient, amount):
         '''
@@ -86,6 +87,17 @@ class Transaction:
         # Re-sign the transaction by creating new, signed, and valid input.
         self.input = self.create_input(sender_wallet, self.output)
 
+    def to_json(self):
+        ''' Serialize a Transaction object into json '''
+        return self.__dict__
+
+    @staticmethod
+    def from_json(trans_json):
+        '''
+        De-serialize a transaction's json representation back into Transaction Instance
+        '''
+        return Transaction(**trans_json)
+
     @staticmethod
     def is_valid(transaction):
         '''
@@ -108,6 +120,9 @@ class Transaction:
 def main():
     transaction = Transaction(Wallet(), 'recipient', 15)
     print(f'transaction: {transaction.__dict__}')
+    trans_json = transaction.to_json()
+    restored_transaction = Transaction.from_json(trans_json)
+    print(f'restored_transaction: {restored_transaction}')
 
 if __name__ == '__main__':
     main()

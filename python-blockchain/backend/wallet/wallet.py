@@ -5,7 +5,9 @@ from backend.config import STARTING_BALANCE
 from backend.util.crypto_hash import utf8
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import hashes as hs
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    encode_dss_signature, decode_dss_signature)
+from cryptography.hazmat.primitives import hashes as hs, serialization
 from cryptography.exceptions import InvalidSignature
 
 
@@ -47,6 +49,7 @@ class Wallet:
         self.private_key = ec.generate_private_key(
             ec.SECP256K1(), default_backend())
         self.public_key = self.private_key.public_key()
+        self.serialize_public_key()
 
     def sign(self, data):
         '''
@@ -56,15 +59,38 @@ class Wallet:
         # Sign the data using private key and ECDSA:
         # Elliptic Cryptography Digital Signature Algorithm
         # Use primitives module with SHA256 
-        return self.private_key.sign(utf8(json.dumps(data)), ec.ECDSA(hs.SHA256()))
+        return decode_dss_signature(self.private_key.sign(
+            utf8(json.dumps(data)), ec.ECDSA(hs.SHA256())))
+
+    def serialize_public_key(self):
+        '''
+            Reset the public key to its serialized version.
+
+            - Use PEM file for serialization encoding.
+              PEM Format as follows:
+                ---- BEGIN
+                kajsdnakjsdnasn_some_text_sahjdnakjdsak...
+                ---- END
+            - Use PublicFormat.SubjectPublicKeyInfo as it is the default option
+              for the Public Bytes algorithm. Which can represent the
+              bytestring in several ways depending on application needs.
+        '''
+        self.public_key = self.public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        ).decode('utf-8')
 
     @staticmethod
     def verify(public_key, data, signature):
         '''
             Verify a signature based on the original public key and data.
         '''
+        deserialized_public_key = serialization.load_pem_public_key(
+            utf8(public_key), default_backend())
+        (r, s) = signature
         try:
-            public_key.verify(signature, utf8(json.dumps(data)), ec.ECDSA(hs.SHA256()))
+            deserialized_public_key.verify(
+               encode_dss_signature(r, s), utf8(json.dumps(data)), ec.ECDSA(hs.SHA256()))
             return True
         except InvalidSignature:
             return False
