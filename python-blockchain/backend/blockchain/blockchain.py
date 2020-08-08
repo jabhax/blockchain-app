@@ -1,6 +1,9 @@
 # blockchain.py
 
 from backend.blockchain.block import Block
+from backend.wallet.transaction import Transaction
+from backend.wallet.wallet import Wallet
+from backend.config import MINING_REWARD_INPUT
 
 
 class Blockchain:
@@ -61,6 +64,42 @@ class Blockchain:
             block = chain[i]
             last_block = chain[i-1]
             Block.is_valid(last_block, block)
+        Blockchain.is_valid_trans_chain(chain)
+
+    def is_valid_trans_chain(chain):
+        '''
+            Enforce the rules of a chain composed of blocks of transaction.
+                - Each transaction must only appear ONCE in the chain.
+                - There can only be ONE mining reward per block.
+                - Each transaction MUST be valid.
+        '''
+        trans_ids = set()
+        for i in range(len(chain)):
+            block = chain[i]
+            has_mining_reward = False
+
+            for trans_json in block.data:
+                trans = Transaction.from_json(trans_json)
+
+                if trans.input == MINING_REWARD_INPUT:
+                    if has_mining_reward:
+                        raise Exception('There can only be one mining reward '
+                                        'per block. Check block with hash: '
+                                        f'{block.hash}')
+                    has_mining_reward = True
+                else:
+                    if trans.id in trans_ids:
+                        raise Exception(f'Transaction {trans.id} is not unique.')
+
+                    trans_ids.add(trans.id)
+                    historic_blockchain = Blockchain()
+                    historic_blockchain.chain = chain[0:i]
+                    historic_balance = Wallet.calculate_balance(
+                        historic_blockchain, trans.input['address'])
+                    if historic_balance != trans.input['amount']:
+                        raise Exception(
+                            f'Transaction {trans.id} has an invalid input amount.')
+                    Transaction.is_valid(trans)
 
 
 def main():

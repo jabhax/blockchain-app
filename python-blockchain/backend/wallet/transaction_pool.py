@@ -14,3 +14,22 @@ class TransactionPool:
         for trans in self.transaction_map.values():
             if trans.input['address'] == address:
                 return trans
+
+    def transaction_data(self):
+        '''
+            Return the transaction of the transaction pool represented in their
+            json serialized form.
+        '''
+        return list(map(lambda t: t.to_json(), self.transaction_map.values()))
+
+    def clear_bc_transactions(self, blockchain):
+        '''
+            Delete blockchain-recorded transactions from the transaction pool.
+        '''
+
+        for block in blockchain.chain:
+            for trans in block.data:
+                try:
+                    del self.transaction_map[trans['id']]
+                except KeyError:
+                    pass
