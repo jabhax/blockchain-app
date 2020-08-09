@@ -34,3 +34,15 @@ python -m backend.app
 ```
 export PEER=True && python -m backend.app
 ```
+
+**Run the frontend**
+```
+npm run start
+```
+
+**Seed the backend data**
+- Exactly like the previous command to python -m backend.app but specifying the SEED_DATA=True to run server on localhost port and seed the backend data with some mined blocks.
+- Make sure to activate the virtual environment.
+```
+export SEED_DATA=True && python -m backend.app
+```
