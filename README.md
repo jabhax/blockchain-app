@@ -1,4 +1,5 @@
-**Blockchain-App**
+**Python Blockchain-App**
+Blockchain written in Python with a React front-end.
 
 **Commands**
 
